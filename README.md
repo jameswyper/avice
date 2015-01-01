@@ -24,3 +24,10 @@ avice_id is a small helper script purely concerned with creating unique id field
 avice_tree is a set of classes implementing the MediaServer2 specification.  This code is mostly written but untested.  The idea is that creating an instance of MediaItem will represent one entry in the media hierarchy exported to Rygel.  The classes will take care of creating MediaContainer and MediaObject objects automatically.
 
 avice_xxxx (yet to be written) will read through the sqlite database and for each file create one or more entries in the media hierarchy (by creating MediaItem objects).
+
+Software Requirements:
+
+id3v2
+sqlite3
+
+Ruby packages: pry dbus sqlite3

@@ -52,7 +52,8 @@ class MediaObject < DBus::Object
 		@propertyValuesObject2["Path"] = path_to_dbus(PATH_ROOT + path)
 		@propertyValuesObject2["DisplayName"] = @displayname
 		super (PATH_ROOT + path)
-		puts "Created " + path.to_s, @@nodeByPath.to_s
+		puts "Created " + path.to_s
+		@@nodeByPath.each { |k,v| puts k.to_s + "=>" + v.path.to_s }
 	end
 	
 	def remove
@@ -169,8 +170,10 @@ class MediaItem < MediaObject
 		puts "mediaitem initialise " + path.to_s
 		path[0..-2].each_index do |c|
 			puts "path level " + c.to_s
+			puts "looking for " + path[0..c].to_s
 			puts "dbus path " + path_to_dbus(path[0..c])
 			if @@nodeByPath[path_to_dbus(path[0..c])] == nil
+				puts "not found, will create " + path[0..c].to_s + " name " + path[c] + "under parent " + path[0..c-1].to_s
 				if c < 1
 					raise "Can't find root container"
 				end
@@ -180,7 +183,9 @@ class MediaItem < MediaObject
 		end
 
 
+		puts "Will place item under " + path[0..-2].to_s
 		parent = @@nodeByPath[path_to_dbus(path[0..-2])]
+		if parent == nil then raise "parent not found!" end
 		super(parent, path, "music")
 		@propertyValues=Hash.new
 		@propertyValues["Artist"] = artist

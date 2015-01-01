@@ -2,6 +2,7 @@
 
 require 'sqlite3'
 require 'dbus'
+require 'pry'
 
 # dbus path names can only contain alphanumeric characters plus _ and /
 # this function will translate strings into a hex representation that
@@ -11,13 +12,15 @@ OBJECT_IFACE = "org.gnome.UPnP.MediaObject2"
 CONTAINER_IFACE = "org.gnome.UPnP.MediaContainer2"
 ITEM_IFACE = "org.gnome.UPnP.MediaItem2"
 PROPERTIES_IFACE = "org.freedesktop.DBus.Properties"
-SERVICE_NAME = "org.gnome.UPnP.MediaServer2.nqu"
+SERVICE_NAME = "org.gnome.UPnP.MediaServer2.avice"
+PATH_ROOT = ["org","gnome","UPnP", "MediaServer2"]
 
 def bin_to_hex(s)
   s.unpack('H*').first
 end
 
 def path_to_dbus(a)
+	#puts "path_to_dbus:" + a.to_s
 	x = String.new
 	a.each do |s|
 		x<<(bin_to_hex(s))<<("/")
@@ -29,9 +32,10 @@ end
 class MediaObject < DBus::Object
 	@@nodeByPath = Hash.new
 	
-	attr_reader :path, :propertyValuesObject2
+	attr_reader :path, :propertyValuesObject2, :type
 
 	def initialize (parent, path, type)
+		puts "MediaObject constructor:" + path.to_s
 		@parent = parent.dup unless parent == nil
 		@path = path.dup
 		@@nodeByPath[path_to_dbus(@path)] = self
@@ -42,12 +46,12 @@ class MediaObject < DBus::Object
 		if parent != nil
 			@propertyValuesObject2["Parent"] = path_to_dbus(@parent.path)
 		else
-			@propertyValuesObject2["Parent"] = path_to_dbus(path)
+			@propertyValuesObject2["Parent"] = path_to_dbus(PATH_ROOT + path)
 		end
 		@propertyValuesObject2["Type"] = @type
-		@propertyValuesObject2["Path"] = path_to_dbus(path)
+		@propertyValuesObject2["Path"] = path_to_dbus(PATH_ROOT + path)
 		@propertyValuesObject2["DisplayName"] = @displayname
-		
+		super (PATH_ROOT + path)
 		puts "Created " + path.to_s, @@nodeByPath.to_s
 	end
 	
@@ -85,7 +89,7 @@ class MediaContainer < MediaObject
 
 	def addChild(child, sortorder)
 		@children << [sortorder,child]
-		@children.sort_by! { |x| x[0] }
+		@children.sort_by! { |x| if x[0].instance_of?(Fixnum) then sprintf("%03i",x[0]) else x[0] end }
 		if child.type == "container"
 			@child_items << [sortorder,child]
 			@child_items.sort_by! { |x| x[0] }
@@ -162,8 +166,8 @@ class MediaItem < MediaObject
 
 # run through the path from start to end, check containers exist, if they don't create them
 
-#		puts "mediaitem initialise " + path
-		path[0..-1].each_index do |c|
+		puts "mediaitem initialise " + path.to_s
+		path[0..-2].each_index do |c|
 			puts "path level " + c.to_s
 			puts "dbus path " + path_to_dbus(path[0..c])
 			if @@nodeByPath[path_to_dbus(path[0..c])] == nil
@@ -176,7 +180,7 @@ class MediaItem < MediaObject
 		end
 
 
-		parent = @@nodeByPath[path_to_dbus(path[0..-1])]
+		parent = @@nodeByPath[path_to_dbus(path[0..-2])]
 		super(parent, path, "music")
 		@propertyValues=Hash.new
 		@propertyValues["Artist"] = artist

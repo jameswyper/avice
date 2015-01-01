@@ -15,7 +15,7 @@ My requirements used to be met by mediatomb which allowed you to create a custom
 
 So I'm starting my own project which will (at least initially) do as little as possible to meet my needs - piggybacking on Rygel rather than writing my own UPnP code for example.  
 
-Avice is written in Ruby.  At the moment it is about halfway towards alpha code.
+Avice is written in Ruby.  At the moment it is about halfway towards alpha code. The name is a small tribute to the character Avice Benner Cho from China Mieville's novel Embassytown.
 
 avice_scan is a script to read metadata from a collection of mp3 files. It will scan directories recursively.  At the moment the script needs to be edited (at the end of the file, should be obvious how) to enter the correct starting directory.  The metadata is stored in a sqlite database file which can be initialised by running the avice_dbcreate script.
 

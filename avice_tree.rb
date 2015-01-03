@@ -4,9 +4,7 @@ require 'sqlite3'
 require 'dbus'
 require 'pry'
 
-# dbus path names can only contain alphanumeric characters plus _ and /
-# this function will translate strings into a hex representation that
-# only has the characters 0-9 and A-F thus meeting the restriction
+
 
 OBJECT_IFACE = "org.gnome.UPnP.MediaObject2"
 CONTAINER_IFACE = "org.gnome.UPnP.MediaContainer2"
@@ -14,6 +12,11 @@ ITEM_IFACE = "org.gnome.UPnP.MediaItem2"
 PROPERTIES_IFACE = "org.freedesktop.DBus.Properties"
 SERVICE_NAME = "org.gnome.UPnP.MediaServer2.avice"
 PATH_ROOT = ["org","gnome","UPnP", "MediaServer2"]
+
+
+# dbus path names can only contain alphanumeric characters plus _ and /
+# this function will translate strings into a hex representation that
+# only has the characters 0-9 and A-F thus meeting the restriction
 
 def bin_to_hex(s)
   s.unpack('H*').first
@@ -52,8 +55,8 @@ class MediaObject < DBus::Object
 		@propertyValuesObject2["Path"] = path_to_dbus(PATH_ROOT + path)
 		@propertyValuesObject2["DisplayName"] = @displayname
 		super (PATH_ROOT + path)
-		puts "Created " + path.to_s
-		@@nodeByPath.each { |k,v| puts k.to_s + "=>" + v.path.to_s }
+		#puts "Created " + path.to_s
+		#@@nodeByPath.each { |k,v| puts k.to_s + "=>" + v.path.to_s }
 	end
 	
 	def remove
@@ -71,7 +74,7 @@ end
 
 class MediaContainer < MediaObject
 	
-	attr_reader :propertyValues
+	attr_reader :propertyValues, :child_items, :child_containers
 	
 	def initialize (parent, path)
 		
@@ -89,14 +92,17 @@ class MediaContainer < MediaObject
 	end
 
 	def addChild(child, sortorder)
+		puts "in addChild routine"
 		@children << [sortorder,child]
 		@children.sort_by! { |x| if x[0].instance_of?(Fixnum) then sprintf("%03i",x[0]) else x[0] end }
 		if child.type == "container"
-			@child_items << [sortorder,child]
-			@child_items.sort_by! { |x| x[0] }
-		else
 			@child_containers << [sortorder,child]
 			@child_containers.sort_by! { |x| x[0] }
+			puts "added a container "+ child.path.to_s + "to " + self.path.to_s
+		else
+			@child_items << [sortorder,child]
+			@child_items.sort_by! { |x| x[0] }
+			puts "added an item "+ child.path.to_s + "to " + self.path.to_s
 		end
 		self.childChanged
 	end

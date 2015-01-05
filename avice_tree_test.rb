@@ -26,9 +26,9 @@ def dump(container, depth)
 end
 
 puts "------------------------------"
-dump(root,0)
+#dump(root,0)
 
-
+MediaObject.run
 
 #binding.pry
 

@@ -22,11 +22,14 @@ def bin_to_hex(s)
   s.unpack('H*').first
 end
 
+# this function takes an array of strings and creates a dbus path out of them, converting the strings to hex (see function above) and separating each one with a slash
+
 def path_to_dbus(a)
 	#puts "path_to_dbus:" + a.to_s
 	x = String.new
+	x<<"/"
 	a.each do |s|
-		x<<(bin_to_hex(s))<<("/")
+		x<<(bin_to_hex(s))<<"/"
 	end
 	return x
 end
@@ -44,9 +47,9 @@ class MediaObject < DBus::Object
 		@@nodeByPath[path_to_dbus(@path)] = self
 		@displayname = @path[-1]
 		@type = type
-#		@@service.export(self)
 		@propertyValuesObject2 = Hash.new
 		if parent != nil
+			binding.pry
 			@propertyValuesObject2["Parent"] = path_to_dbus(@parent.path)
 		else
 			@propertyValuesObject2["Parent"] = path_to_dbus(PATH_ROOT + path)
@@ -54,9 +57,10 @@ class MediaObject < DBus::Object
 		@propertyValuesObject2["Type"] = @type
 		@propertyValuesObject2["Path"] = path_to_dbus(PATH_ROOT + path)
 		@propertyValuesObject2["DisplayName"] = @displayname
-		super (PATH_ROOT + path)
-		#puts "Created " + path.to_s
-		#@@nodeByPath.each { |k,v| puts k.to_s + "=>" + v.path.to_s }
+		#super (path_to_dbus(PATH_ROOT + path))  <--- problem here, need to change name of path variable
+		#@@service.export(self)
+		puts "Created " + path.to_s
+		@@nodeByPath.each { |k,v| puts k.to_s + "=>" + v.path.to_s }
 	end
 	
 	def remove
@@ -65,9 +69,15 @@ class MediaObject < DBus::Object
 	
 	
 	
-#	@@bus = DBus.session_bus
-#	@@service = @@bus.request_service(SERVICE_NAME)
+ 	@@bus = DBus.session_bus
+ 	@@service = @@bus.request_service(SERVICE_NAME)
+	
 
+	def MediaObject.run
+		loop = Dbus::Main.new
+		loop << @@bus
+		loop.run
+	end
 
 end
 
@@ -161,7 +171,59 @@ class MediaContainer < MediaObject
 		end
 		
 	end
+
+	dbus_interface PROPERTIES_IFACE do
+		dbus_method :Get, "in iface:s, in name:s, out value:v" do |iface, name|
+			
+			value = Array.new	
+			
+			case iface
+			when OBJECT_IFACE
+				value << @propertyValuesObject2.fetch(name) { |x| raise DBus.error, "Could not find property #{x} in #{iface}" }
+			when CONTAINER_IFACE
+				value << @propertyValues.fetch(name) { |x| raise DBus.error, "Could not find property #{x} in #{iface}"  }
+			else
+				raise DBus.error, "Could not find interface #{iface} when looking for property #{name}"
+			end
+			
+			value
+		end
+
+		dbus_method :GetAll, "in iface:s, out values:e{sv}" do |iface|
+			
+			values = Hash.new
+			
+			case iface
+			when OBJECT_IFACE
+				return @propertyValuesObject2
+			when CONTAINER_IFACE
+				return @propertyValues
+			else
+				raise DBus.error, "Could not find inteface #{iface} when getting all properties"
+			end
+			
+		end
+	end
+	
+	dbus_interface CONTAINER_IFACE do
 		
+		dbus_method :ListChildren, "in offset:u, in max:u, in filter:a{s}, out values:aa{sv}" do
+			values = getDataForList(@children,offset,max,filter)
+		end
+		
+		dbus_method :ListItems , "in offset:u, in max:u, in filter:a{s}, out values:aa{sv}"do
+			values = getDataForList(@child_items,offset,max,filter)
+		end
+		
+		dbus_method :ListContainers, "in offset:u, in max:u, in filter:a{s}, out values:aa{sv}" do
+			values = getDataForList(@child_containers,offset,max,filter)
+		end
+		
+		dbus_method :SearchObjects do
+			raise DBus.error("org.freedesktop.DBus.Error.NotSupported") #need to confirm this is right
+		end
+	end
+
 
 end
 
@@ -188,6 +250,7 @@ class MediaItem < MediaObject
 			end
 		end
 
+# set up the item
 
 		puts "Will place item under " + path[0..-2].to_s
 		parent = @@nodeByPath[path_to_dbus(path[0..-2])]
@@ -210,37 +273,38 @@ class MediaItem < MediaObject
 		super
 	end
 	
-#	dbus_interface PROPERTIES_IFACE do
-#		dbus_method :Get, "in iface:s, in name:s, out value:v" do |iface, name|
-#			
-#			value = Array.new	
-#			
-#			case iface
-#			when OBJECT_IFACE
-#				value << @propertyValuesObject2.fetch(name) { |x| raise DBus.error, "Could not find property #{x} in #{iface}" }
-#			when ITEM_IFACE
-#				value << @propertyValues.fetch(name) { |x| raise DBus.error, "Could not find property #{x} in #{iface}"  }
-#			else
-#				raise DBus.error, "Could not find interface #{iface} when looking for property #{name}"
-#			end
-#			
-#			value
-#		end
-#		dbus_method :GetAll, "in iface:s, out values:e{sv}" do |iface|
-#			
-#			values = Hash.new
-#			
-#			case iface
-#				return @propertyValuesObject2
-#			when "org.gnome.UpnP.MediaItem2"
-#				return @propertyValues
-#			else
-#				raise DBus.error, "Could not find inteface #{iface} when getting all properties"
-#			end
-#			
-#		end
-#	end
+	dbus_interface PROPERTIES_IFACE do
+		dbus_method :Get, "in iface:s, in name:s, out value:v" do |iface, name|
+			
+			value = Array.new	
+			
+			case iface
+			when OBJECT_IFACE
+				value << @propertyValuesObject2.fetch(name) { |x| raise DBus.error, "Could not find property #{x} in #{iface}" }
+			when ITEM_IFACE
+				value << @propertyValues.fetch(name) { |x| raise DBus.error, "Could not find property #{x} in #{iface}"  }
+			else
+				raise DBus.error, "Could not find interface #{iface} when looking for property #{name}"
+			end
+			
+			value
+		end
 
+		dbus_method :GetAll, "in iface:s, out values:e{sv}" do |iface|
+			
+			values = Hash.new
+			
+			case iface
+			when OBJECT_IFACE
+				return @propertyValuesObject2
+			when ITEM_IFACE
+				return @propertyValues
+			else
+				raise DBus.error, "Could not find inteface #{iface} when getting all properties"
+			end
+			
+		end
+	end
 end
 
 

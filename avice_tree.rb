@@ -11,7 +11,7 @@ CONTAINER_IFACE = "org.gnome.UPnP.MediaContainer2"
 ITEM_IFACE = "org.gnome.UPnP.MediaItem2"
 PROPERTIES_IFACE = "org.freedesktop.DBus.Properties"
 SERVICE_NAME = "org.gnome.UPnP.MediaServer2.avice"
-PATH_ROOT = ["org","gnome","UPnP", "MediaServer2"]
+PATH_ROOT = "org.gnome.UPnP.MediaServer2"
 
 
 # dbus path names can only contain alphanumeric characters plus _ and /
@@ -27,10 +27,8 @@ end
 def path_to_dbus(a)
 	#puts "path_to_dbus:" + a.to_s
 	x = String.new
-	x<<"/"
-	a.each do |s|
-		x<<(bin_to_hex(s))<<"/"
-	end
+	x = PATH_ROOT + "/" + a[0]  
+	a[1..-1].each do { |s| x << "/" << (bin_to_hex(s)) } unless a.size == 1
 	return x
 end
 
@@ -51,12 +49,12 @@ class MediaObject < DBus::Object
 		if parent != nil
 			@propertyValuesObject2["Parent"] = path_to_dbus(@parent.pathElements)
 		else
-			@propertyValuesObject2["Parent"] = path_to_dbus(PATH_ROOT + pathElements)
+			@propertyValuesObject2["Parent"] = path_to_dbus(pathElements)
 		end
 		@propertyValuesObject2["Type"] = @type
-		@propertyValuesObject2["Path"] = path_to_dbus(PATH_ROOT + pathElements)
+		@propertyValuesObject2["Path"] = path_to_dbus(pathElements)
 		@propertyValuesObject2["DisplayName"] = @displayname
-		super (path_to_dbus(PATH_ROOT + pathElements))  
+		super (path_to_dbus(pathElements))  
 		@@service.export(self)
 		puts "Created " + pathElements.to_s
 		@@nodeByPath.each { |k,v| puts k.to_s + "=>" + v.pathElements.to_s }

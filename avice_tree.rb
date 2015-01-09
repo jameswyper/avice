@@ -181,6 +181,8 @@ class MediaContainer < MediaObject
 				value << @propertyValuesObject2.fetch(name) { |x| raise DBus.error, "Could not find property #{x} in #{iface}" }
 			when CONTAINER_IFACE
 				value << @propertyValues.fetch(name) { |x| raise DBus.error, "Could not find property #{x} in #{iface}"  }
+			when ""
+				value << @propertyValues.merge(@propertyValuesObject2).fetch(name) { |x| raise DBus.error, "Could not find property #{x} in #{iface}"  }
 			else
 				raise DBus.error, "Could not find interface #{iface} when looking for property #{name}"
 			end
@@ -197,6 +199,8 @@ class MediaContainer < MediaObject
 				values = @propertyValuesObject2
 			when CONTAINER_IFACE
 				values = @propertyValues
+			when ""
+				values = @propertyValuesObject2.merge(@propertyValues)
 			else
 				raise DBus.error, "Could not find interface #{iface} when getting all properties"
 			end
@@ -286,6 +290,8 @@ class MediaItem < MediaObject
 				value << @propertyValuesObject2.fetch(name) { |x| raise DBus.error, "Could not find property #{x} in #{iface}" }
 			when ITEM_IFACE
 				value << @propertyValues.fetch(name) { |x| raise DBus.error, "Could not find property #{x} in #{iface}"  }
+			when ""
+				value << @propertyValues.merge(@propertyValuesObject2).fetch(name) { |x| raise DBus.error, "Could not find property #{x} in #{iface}"  }
 			else
 				raise DBus.error, "Could not find interface #{iface} when looking for property #{name}"
 			end
@@ -302,6 +308,8 @@ class MediaItem < MediaObject
 				values = @propertyValuesObject2
 			when ITEM_IFACE
 				values = @propertyValues
+			when ""
+				values = @propertyValuesObject2.merge(@propertyValues)
 			else
 				raise DBus.error, "Could not find inteface #{iface} when getting all properties"
 			end

@@ -10,8 +10,8 @@ OBJECT_IFACE = "org.gnome.UPnP.MediaObject2"
 CONTAINER_IFACE = "org.gnome.UPnP.MediaContainer2"
 ITEM_IFACE = "org.gnome.UPnP.MediaItem2"
 PROPERTIES_IFACE = "org.freedesktop.DBus.Properties"
-SERVICE_NAME = "org.gnome.UPnP.MediaServer2.avice"
-PATH_ROOT = "org.gnome.UPnP.MediaServer2"
+SERVICE_NAME = "org.gnome.UPnP.MediaServer2.Avice"
+PATH_ROOT = "org/gnome/UPnP/MediaServer2"
 
 
 # dbus path names can only contain alphanumeric characters plus _ and /
@@ -28,7 +28,9 @@ def path_to_dbus(a)
 	#puts "path_to_dbus:" + a.to_s
 	x = String.new
 	x = PATH_ROOT + "/" + a[0]  
-	a[1..-1].each do { |s| x << "/" << (bin_to_hex(s)) } unless a.size == 1
+	if a.size > 1
+		a[1..-1].each { |s| x += "/" + bin_to_hex(s) } 
+	end
 	return x
 end
 

@@ -157,7 +157,7 @@ class MediaContainer < MediaObject
 		child_array[offset..highest].each do |cref|
 			child = cref[1]
 			allProperties = child.propertyValues.merge(child.propertyValuesObject2)
-			if propertiesReq == "*"
+			if propertiesReq == ["*"]
 				propertiesResponse = allProperties.to_a
 			else
 				propertiesResponse = Array.new
@@ -174,56 +174,58 @@ class MediaContainer < MediaObject
 	dbus_interface PROPERTIES_IFACE do
 		dbus_method :Get, "in iface:s, in name:s, out value:v" do |iface, name|
 			
-			value = Array.new	
+			rvalue = Array.new	
 			
 			case iface
 			when OBJECT_IFACE
-				value << @propertyValuesObject2.fetch(name) { |x| raise DBus.error, "Could not find property #{x} in #{iface}" }
+				rvalue << @propertyValuesObject2.fetch(name) { |x| raise DBus.error, "Could not find property #{x} in #{iface}" }
 			when CONTAINER_IFACE
-				value << @propertyValues.fetch(name) { |x| raise DBus.error, "Could not find property #{x} in #{iface}"  }
+				rvalue << @propertyValues.fetch(name) { |x| raise DBus.error, "Could not find property #{x} in #{iface}"  }
 			when ""
-				value << @propertyValues.merge(@propertyValuesObject2).fetch(name) { |x| raise DBus.error, "Could not find property #{x} in #{iface}"  }
+				rvalue << @propertyValues.merge(@propertyValuesObject2).fetch(name) { |x| raise DBus.error, "Could not find property #{x} in #{iface}"  }
 			else
 				raise DBus.error, "Could not find interface #{iface} when looking for property #{name}"
 			end
 			
-			[value]
+			[rvalue]
 		end
 
 		dbus_method :GetAll, "in iface:s, out values:a{sv}" do |iface|
 			
-			values = Hash.new
+			rvalues = Hash.new
 			puts "GetAll for #{iface} called"
+			binding.pry
 			case iface
 			when OBJECT_IFACE
-				values = @propertyValuesObject2
+				rvalues = @propertyValuesObject2
 			when CONTAINER_IFACE
-				values = @propertyValues
+				rvalues = @propertyValues
 			when ""
-				values = @propertyValuesObject2.merge(@propertyValues)
+				rvalues = @propertyValuesObject2.merge(@propertyValues)
 			else
 				raise DBus.error, "Could not find interface #{iface} when getting all properties"
 			end
-			puts values.to_s
-			[values]
+			puts rvalues.to_s
+			[rvalues]
 		end
 	end
 	
 	dbus_interface CONTAINER_IFACE do
 		
-		dbus_method :ListChildren, "in offset:u, in max:u, in filter:as, out values:aa{sv}" do
-			values = getDataForList(@children,offset,max,filter)
-			[values]
+		dbus_method :ListChildren, "in offset:u, in max:u, in filter:as, out values:aa{sv}" do |offset, max, filter|
+			puts "ListChildren called for " + displayName
+			rvalues = getDataForList(@children,offset,max,filter)
+			[rvalues]
 		end
 		
-		dbus_method :ListItems , "in offset:u, in max:u, in filter:as, out values:aa{sv}"do
-			values = getDataForList(@child_items,offset,max,filter)
-			[values]
+		dbus_method :ListItems , "in offset:u, in max:u, in filter:as, out values:aa{sv}"do |offset, max, filter|
+			rvalues = getDataForList(@child_items,offset,max,filter)
+			[rvalues]
 		end
 		
-		dbus_method :ListContainers, "in offset:u, in max:u, in filter:as, out values:aa{sv}" do
-			values = getDataForList(@child_containers,offset,max,filter)
-			[values]
+		dbus_method :ListContainers, "in offset:u, in max:u, in filter:as, out values:aa{sv}" do |offset, max, filter|
+			rvalues = getDataForList(@child_containers,offset,max,filter)
+			[rvalues]
 		end
 		
 		dbus_method :SearchObjects do
@@ -283,37 +285,37 @@ class MediaItem < MediaObject
 	dbus_interface PROPERTIES_IFACE do
 		dbus_method :Get, "in iface:s, in name:s, out value:v" do |iface, name|
 			
-			value = Array.new	
+			rvalue = Array.new	
 			
 			case iface
 			when OBJECT_IFACE
-				value << @propertyValuesObject2.fetch(name) { |x| raise DBus.error, "Could not find property #{x} in #{iface}" }
+				rvalue << @propertyValuesObject2.fetch(name) { |x| raise DBus.error, "Could not find property #{x} in #{iface}" }
 			when ITEM_IFACE
-				value << @propertyValues.fetch(name) { |x| raise DBus.error, "Could not find property #{x} in #{iface}"  }
+				rvalue << @propertyValues.fetch(name) { |x| raise DBus.error, "Could not find property #{x} in #{iface}"  }
 			when ""
-				value << @propertyValues.merge(@propertyValuesObject2).fetch(name) { |x| raise DBus.error, "Could not find property #{x} in #{iface}"  }
+				rvalue << @propertyValues.merge(@propertyValuesObject2).fetch(name) { |x| raise DBus.error, "Could not find property #{x} in #{iface}"  }
 			else
 				raise DBus.error, "Could not find interface #{iface} when looking for property #{name}"
 			end
 			
-			value
+			rvalue
 		end
 
 		dbus_method :GetAll, "in iface:s, out values:a{sv}" do |iface|
 			
-			values = Hash.new
+			rvalues = Hash.new
 			
 			case iface
 			when OBJECT_IFACE
-				values = @propertyValuesObject2
+				rvalues = @propertyValuesObject2
 			when ITEM_IFACE
-				values = @propertyValues
+				rvalues = @propertyValues
 			when ""
-				values = @propertyValuesObject2.merge(@propertyValues)
+				rvalues = @propertyValuesObject2.merge(@propertyValues)
 			else
 				raise DBus.error, "Could not find inteface #{iface} when getting all properties"
 			end
-			
+			[rvalues]
 		end
 	end
 end

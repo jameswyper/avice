@@ -45,7 +45,7 @@ class MediaObject < DBus::Object
 		@parent = parent.dup unless parent == nil
 		@pathElements = pathElements.dup
 		@@nodeByPath[path_to_dbus(@pathElements)] = self
-		@displayname = @pathElements[-1]
+		@displayName = @pathElements[-1]
 		@type = type
 		@propertyValuesObject2 = Hash.new
 		if parent != nil
@@ -55,7 +55,7 @@ class MediaObject < DBus::Object
 		end
 		@propertyValuesObject2["Type"] = @type
 		@propertyValuesObject2["Path"] = path_to_dbus(pathElements)
-		@propertyValuesObject2["DisplayName"] = @displayname
+		@propertyValuesObject2["DisplayName"] = @displayName
 		super (path_to_dbus(pathElements))  
 		@@service.export(self)
 		puts "Created " + pathElements.to_s
@@ -94,6 +94,9 @@ class MediaContainer < MediaObject
 		@child_containers = Array.new
 		@propertyValues = Hash.new
 		@propertyValues["Searchable"] = false
+		@propertyValues["ChildCount"] = 0
+		@propertyValues["ItemCount"] = 0
+		@propertyValues["ContainerCount"] = 0
 	end
 
 	def remove
@@ -150,10 +153,12 @@ class MediaContainer < MediaObject
 			offset = s
 		end
 		if (s < (offset + max)) || (max == 0)
-			highest = s
+			highest = s - 1
 		else
-			highest = offset + max
+			highest = offset + max - 1
 		end
+		puts "getDataForList #{@displayname} #{offset} #{highest}, request properties #{propertiesReq}"
+		#binding.pry
 		child_array[offset..highest].each do |cref|
 			child = cref[1]
 			allProperties = child.propertyValues.merge(child.propertyValuesObject2)
@@ -168,7 +173,8 @@ class MediaContainer < MediaObject
 			end
 			response << propertiesResponse
 		end
-		
+		#binding.pry
+		return response
 	end
 
 	dbus_interface PROPERTIES_IFACE do
@@ -194,7 +200,7 @@ class MediaContainer < MediaObject
 			
 			rvalues = Hash.new
 			puts "GetAll for #{iface} called"
-			binding.pry
+			#binding.pry
 			case iface
 			when OBJECT_IFACE
 				rvalues = @propertyValuesObject2
@@ -213,8 +219,9 @@ class MediaContainer < MediaObject
 	dbus_interface CONTAINER_IFACE do
 		
 		dbus_method :ListChildren, "in offset:u, in max:u, in filter:as, out values:aa{sv}" do |offset, max, filter|
-			puts "ListChildren called for " + displayName
+			puts "ListChildren called for " + @displayName
 			rvalues = getDataForList(@children,offset,max,filter)
+			#binding.pry
 			[rvalues]
 		end
 		

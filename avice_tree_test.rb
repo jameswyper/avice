@@ -7,7 +7,6 @@ require 'pry'
 root = MediaContainer.new(nil, ["Avice"])
 
 test1 = MediaItem.new(["Avice","track1"], "art1", "alb1", "gen1", 1, "http://blah1")
-
 MediaItem.new(["Avice", "album1", "track2"] , "art2", "alb2", "gen2", 1, "http://blah2")
 MediaItem.new(["Avice", "album1", "track3"] , "art2", "alb2", "gen2", 2, "http://blah3")
 MediaItem.new(["Avice", "genre", "album2", "track1"] , "art2", "alb2", "gen2", 1, "http://blah4")
@@ -28,8 +27,8 @@ def dump(container, depth)
 end
 
 
-puts "------------------------------"
-dump(root,0)
+#puts "------------------------------"
+#dump(root,0)
 
 MediaObject.run
 

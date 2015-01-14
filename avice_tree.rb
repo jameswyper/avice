@@ -51,7 +51,7 @@ class MediaObject < DBus::Object
 		if parent != nil
 			@propertyValuesObject2["Parent"] = path_to_dbus(@parent.pathElements)
 		else
-			@propertyValuesObject2["Parent"] = path_to_dbus(pathElements)
+			@propertyValuesObject2["Parent"] =  path_to_dbus(pathElements)
 		end
 		@propertyValuesObject2["Type"] = @type
 		@propertyValuesObject2["Path"] = path_to_dbus(pathElements)
@@ -162,12 +162,13 @@ class MediaContainer < MediaObject
 		child_array[offset..highest].each do |cref|
 			child = cref[1]
 			allProperties = child.propertyValues.merge(child.propertyValuesObject2)
+			#binding.pry
 			if propertiesReq == ["*"]
 				propertiesResponse = allProperties.to_a
 			else
 				propertiesResponse = Array.new
 				propertiesReq.each do |p|
-					propertiesResponse << allProperties[p] unless allProperties[p] == nil
+					propertiesResponse << [ p,  allProperties[p] ] unless allProperties[p] == nil
 					# need to check if this is expected behaviour ie what happens if requested property doesn't exist
 				end
 			end

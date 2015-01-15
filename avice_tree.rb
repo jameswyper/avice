@@ -11,7 +11,7 @@ CONTAINER_IFACE = "org.gnome.UPnP.MediaContainer2"
 ITEM_IFACE = "org.gnome.UPnP.MediaItem2"
 PROPERTIES_IFACE = "org.freedesktop.DBus.Properties"
 SERVICE_NAME = "org.gnome.UPnP.MediaServer2.Avice"
-PATH_ROOT = "org/gnome/UPnP/MediaServer2"
+PATH_ROOT = "/org/gnome/UPnP/MediaServer2"
 
 
 # dbus path names can only contain alphanumeric characters plus _ and /
@@ -49,12 +49,12 @@ class MediaObject < DBus::Object
 		@type = type
 		@propertyValuesObject2 = Hash.new
 		if parent != nil
-			@propertyValuesObject2["Parent"] = path_to_dbus(@parent.pathElements)
+			@propertyValuesObject2["Parent"] = [DBus::type("o"),path_to_dbus(@parent.pathElements)]
 		else
-			@propertyValuesObject2["Parent"] =  path_to_dbus(pathElements)
+			@propertyValuesObject2["Parent"] = [DBus::type("o"),path_to_dbus(pathElements)]
 		end
 		@propertyValuesObject2["Type"] = @type
-		@propertyValuesObject2["Path"] = path_to_dbus(pathElements)
+		@propertyValuesObject2["Path"] = [DBus::type("o"),path_to_dbus(pathElements)]
 		@propertyValuesObject2["DisplayName"] = @displayName
 		super (path_to_dbus(pathElements))  
 		@@service.export(self)
@@ -94,9 +94,9 @@ class MediaContainer < MediaObject
 		@child_containers = Array.new
 		@propertyValues = Hash.new
 		@propertyValues["Searchable"] = false
-		@propertyValues["ChildCount"] = 0
-		@propertyValues["ItemCount"] = 0
-		@propertyValues["ContainerCount"] = 0
+		@propertyValues["ChildCount"] = [DBus::type("u"),0]
+		@propertyValues["ItemCount"] = [DBus::type("u"),0]
+		@propertyValues["ContainerCount"] = [DBus::type("u"),0]
 	end
 
 	def remove
@@ -139,9 +139,9 @@ class MediaContainer < MediaObject
 	end
 	
 	def childChanged
-		@propertyValues["ChildCount"] = @children.size
-		@propertyValues["ItemCount"] = @child_items.size
-		@propertyValues["ContainerCount"] = @child_containers.size
+		@propertyValues["ChildCount"][1] = @children.size
+		@propertyValues["ItemCount"][1] = @child_items.size
+		@propertyValues["ContainerCount"][1] = @child_containers.size
 		
 		#set up signal
 	end

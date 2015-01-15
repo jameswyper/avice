@@ -15,17 +15,20 @@ My requirements used to be met by mediatomb which allows you to create a custom 
 
 So I'm starting my own project which will (at least initially) do as little as possible to meet my needs - piggybacking on Rygel rather than writing my own UPnP code for example.  
 
-Avice is written in Ruby.  At the moment it is about halfway towards alpha code. 
-
 The name is a small tribute to the character Avice Benner Cho from China Mieville's novel Embassytown.  In the book, she has to bridge an impossible communications gap.  Programming with DBus sometimes feels much the same way.
+
+Avice is written in Ruby.  At the moment it is about halfway towards alpha code. It's a collection of scripts:
 
 avice_scan is a script to read metadata from a collection of mp3 files. It will scan directories recursively.  At the moment the script needs to be edited (at the end of the file, should be obvious how) to enter the correct starting directory.  The metadata is stored in a sqlite database file which can be initialised by running the avice_dbcreate script.
 
-avice_id is a small helper script purely concerned with creating unique id fields for the database.
+avice_id is a small helper script purely concerned with creating unique id fields for the database; I'll probably get rid of this in a later version
 
-avice_tree is a set of classes implementing the MediaServer2 specification.  This code is mostly written but untested.  The idea is that creating an instance of MediaItem will represent one entry in the media hierarchy exported to Rygel.  The classes will take care of creating MediaContainer and MediaObject objects automatically.
+avice_tree is a set of classes implementing the MediaServer2 specification.  The idea is that creating an instance of MediaItem will represent one entry in the media hierarchy exported to Rygel.  The classes will take care of creating MediaContainer and MediaObject objects automatically.
+
+avice_tree_test is a script to create some (dummy) entries in a media hierarchy and export them to rygel.  At the moment running this appears to work with rygel - when testing with djmount and eezupnp clients the media hierarchy shows up and can be navigated.
 
 avice_xxxx (yet to be written) will read through the sqlite database and for each file create one or more entries in the media hierarchy (by creating MediaItem objects).
+
 
 Software Requirements:
 

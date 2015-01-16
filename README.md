@@ -27,7 +27,7 @@ avice_tree is a set of classes implementing the MediaServer2 specification.  The
 
 avice_tree_test is a script to create some (dummy) entries in a media hierarchy and export them to rygel.  At the moment running this appears to work with rygel - when testing with djmount and eezupnp clients the media hierarchy shows up and can be navigated.
 
-avice_xxxx (yet to be written) will read through the sqlite database and for each file create one or more entries in the media hierarchy (by creating MediaItem objects).
+avice_create_tree reads through the sqlite database and for each file create one or more entries in the media hierarchy (by creating MediaItem objects)
 
 
 Software Requirements:
@@ -37,7 +37,7 @@ sqlite3
 
 Ruby packages used: pry dbus sqlite3
 
-Other software that I've found helpful: bustle, upnp-inspector, d-feet
+Other software that I've found helpful: bustle, upnp-inspector, d-feet, djmount, eezupnp
 
 References:
 

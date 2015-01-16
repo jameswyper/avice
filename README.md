@@ -27,8 +27,18 @@ avice_tree is a set of classes implementing the MediaServer2 specification.  The
 
 avice_tree_test is a script to create some (dummy) entries in a media hierarchy and export them to rygel.  At the moment running this appears to work with rygel - when testing with djmount and eezupnp clients the media hierarchy shows up and can be navigated.
 
-avice_create_tree reads through the sqlite database and for each file create one or more entries in the media hierarchy (by creating MediaItem objects)
+avice_create_tree reads through the sqlite database and for each file create one or more entries in the media hierarchy (by creating MediaItem objects).  At the time of writing this is creating the hierarchy but it's not correct.
 
+Instructions (not that this is working yet)
+
+1.  Edit avice_scan.rb to point to your music
+2.  run avice_dbcreate.rb (you need only do this once)
+3.  run avice_scan.rb
+4.  (if you're feeling brave) edit the custom path creation code in avice_create_tree.rb
+5.  run avice_create_tree.rb
+6.  configure rygel to accept external plugins over DBus (change the section under [External] in rygel.conf to read "enabled=true")
+7.  Run rygel (rygel will abort after 5 seconds if it can't find any media backends so ensure you have avice_tree_create running first)
+8.  Start your UPnP client
 
 Software Requirements:
 

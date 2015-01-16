@@ -5,12 +5,12 @@ require 'dbus'
 require 'pry'
 
 
-
+SERVER_NAME = ["Avice"]
 OBJECT_IFACE = "org.gnome.UPnP.MediaObject2"
 CONTAINER_IFACE = "org.gnome.UPnP.MediaContainer2"
 ITEM_IFACE = "org.gnome.UPnP.MediaItem2"
 PROPERTIES_IFACE = "org.freedesktop.DBus.Properties"
-SERVICE_NAME = "org.gnome.UPnP.MediaServer2.Avice"
+SERVICE_NAME = "org.gnome.UPnP.MediaServer2." + SERVER_NAME[0]
 PATH_ROOT = "/org/gnome/UPnP/MediaServer2"
 
 

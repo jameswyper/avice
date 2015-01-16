@@ -5,7 +5,7 @@ require 'fileutils'
 require 'pathname'
 require 'shellwords'
 
-require 'avice_id'
+require_relative 'avice_id.rb'
 
 
 
@@ -112,8 +112,8 @@ end
 
 
 
-cmd_path = '/home/james/Music/mp3/originals/classical'
-cmd_ext = 'mp3'
+#cmd_path = '/home/james/Music/mp3/originals/classical'
+#cmd_ext = 'mp3'
 
-scan_and_store('/home/james/Music/mp3/originals/classical', 'mp3')
-scan_and_store('/home/james/Music/mp3/converted/flac/classical', 'mp3')
+scan_and_store('/home/james/Music', 'mp3')
+#scan_and_store('/home/james/Music/mp3/converted/flac/classical', 'mp3')

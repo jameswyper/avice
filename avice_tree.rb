@@ -22,6 +22,18 @@ def bin_to_hex(s)
   s.unpack('H*').first
 end
 
+def DBusEscape(s)
+	r = String.new
+	s.each_char do |c|
+		if c =~ /[A-Za-z0-9]/
+			r << c
+		else
+			r << "_" <<  bin_to_hex(c)
+		end
+	end
+	return r
+end
+
 # this function takes an array of strings and creates a dbus path out of them, converting the strings to hex (see function above) and separating each one with a slash
 
 def path_to_dbus(a)
@@ -29,7 +41,7 @@ def path_to_dbus(a)
 	x = String.new
 	x = PATH_ROOT + "/" + a[0]  
 	if a.size > 1
-		a[1..-1].each { |s| x += "/" + bin_to_hex(s) } 
+		a[1..-1].each { |s| x += "/" +DBusEscape(s) } 
 	end
 	return x
 end
@@ -40,12 +52,12 @@ class MediaObject < DBus::Object
 	
 	attr_reader :pathElements, :propertyValuesObject2, :type
 
-	def initialize (parent, pathElements, type)
+	def initialize (parent, pathElements, type, dname)
 		puts "MediaObject constructor:" + pathElements.to_s
 		@parent = parent.dup unless parent == nil
 		@pathElements = pathElements.dup
 		@@nodeByPath[path_to_dbus(@pathElements)] = self
-		@displayName = @pathElements[-1]
+		@displayName = dname
 		@type = type
 		@propertyValuesObject2 = Hash.new
 		if parent != nil
@@ -58,8 +70,8 @@ class MediaObject < DBus::Object
 		@propertyValuesObject2["DisplayName"] = @displayName
 		super (path_to_dbus(pathElements))  
 		@@service.export(self)
-		puts "Created " + pathElements.to_s
-		@@nodeByPath.each { |k,v| puts k.to_s + "=>" + v.pathElements.to_s }
+		puts "Created " + pathElements.to_s + ":" + dname
+		#@@nodeByPath.each { |k,v| puts k.to_s + "=>" + v.pathElements.to_s }
 	end
 	
 	def remove
@@ -87,7 +99,7 @@ class MediaContainer < MediaObject
 	
 	def initialize (parent, pathElements)
 		
-		super(parent, pathElements, "container")
+		super(parent, pathElements, "container", pathElements[-1])
 		
 		@children = Array.new
 		@child_items = Array.new
@@ -248,15 +260,13 @@ class MediaItem < MediaObject
 	
 	attr_reader :propertyValues	
 	
-	def initialize(pathElements,artist,album,genre,track,url)
+	def initialize(pathElements,artist,album,genre,track,title,url)
 
 # run through the path from start to end, check containers exist, if they don't create them
 
 		puts "mediaitem initialise " + pathElements.to_s
 		pathElements[0..-2].each_index do |c|
-			puts "path level " + c.to_s
-			puts "looking for " + pathElements[0..c].to_s
-			puts "dbus path " + path_to_dbus(pathElements[0..c])
+			puts "path level " + c.to_s + " looking for " + pathElements[0..c].to_s
 			if @@nodeByPath[path_to_dbus(pathElements[0..c])] == nil
 				puts "not found, will create " + pathElements[0..c].to_s + " name " + pathElements[c] + "under parent " + pathElements[0..c-1].to_s
 				if c < 1
@@ -264,21 +274,23 @@ class MediaItem < MediaObject
 				end
 				parent = @@nodeByPath[path_to_dbus(pathElements[0..c-1])]
 				parent.addChild(MediaContainer.new(parent, pathElements[0..c]),pathElements[c])
+			else
+				puts "found OK"
 			end
 		end
 
 # set up the item
 
-		puts "Will place item under " + pathElements[0..-2].to_s
+		puts "Will place item " + title + " under " + pathElements[0..-2].to_s
 		parent = @@nodeByPath[path_to_dbus(pathElements[0..-2])]
 		if parent == nil then raise "parent not found!" end
-		super(parent, pathElements, "music")
+		super(parent, pathElements, "music",title)
 		@propertyValues=Hash.new
 		@propertyValues["Artist"] = artist
 		@propertyValues["Album"] = album
 		@propertyValues["Genre"] = genre
 		@propertyValues["TrackNumber"] =track
-		@propertyValues["URLs"] = [url]
+		@propertyValues["URLs"] = [DBus::type("as"),[url]]
 		@propertyValues["MIMEType"] = "audio/mpeg"
 		parent.addChild(self,track)
 		

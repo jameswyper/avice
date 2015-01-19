@@ -38,15 +38,27 @@ row = db.execute('select filename, path, genre, artist, composer, album_artist, 
 
 db.close
 
-puts "Database output"
-row.each { |r| puts r.to_s }
-puts "Database output ends"
+#puts "Database output"
+#row.each { |r| puts r.to_s }
+#puts "Database output ends"
+
+puts row.size.to_s + " entries to add"
+c = 0
+
 
 row.each do |r|
 	tree_paths = makepath(r[2], r[3], r[4], r[5], r[6], r[8], r[7], r[0], r[1])
 	tree_paths.each do |path| 
-		puts  "Path: " + path.to_s
-		MediaItem.new(path, r[3], r[6], r[2], r[7], r[8], "file://" + r[1] ) 
+		#puts  "Path: " + path.to_s
+		begin
+			MediaItem.new(path, r[3], r[6], r[2], r[7], r[8], "file://" + r[1] )
+		rescue
+			puts "Problem with " + r[1]
+		end
+	end
+	c = c + 1
+	if (c %  100 == 0)
+		puts c.to_s + " out of " + row.size.to_s  
 	end
 end
 

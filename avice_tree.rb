@@ -53,7 +53,7 @@ class MediaObject < DBus::Object
 	attr_reader :pathElements, :propertyValuesObject2, :type
 
 	def initialize (parent, pathElements, type, dname)
-		puts "MediaObject constructor:" + pathElements.to_s
+		#puts "MediaObject constructor:" + pathElements.to_s
 		@parent = parent.dup unless parent == nil
 		@pathElements = pathElements.dup
 		@@nodeByPath[path_to_dbus(@pathElements)] = self
@@ -70,7 +70,7 @@ class MediaObject < DBus::Object
 		@propertyValuesObject2["DisplayName"] = @displayName
 		super (path_to_dbus(pathElements))  
 		@@service.export(self)
-		puts "Created " + pathElements.to_s + ":" + dname
+		#puts "Created " + pathElements.to_s + ":" + dname
 		#@@nodeByPath.each { |k,v| puts k.to_s + "=>" + v.pathElements.to_s }
 	end
 	
@@ -116,17 +116,17 @@ class MediaContainer < MediaObject
 	end
 
 	def addChild(child, sortorder)
-		puts "in addChild routine"
+		#puts "in addChild routine"
 		@children << [sortorder,child]
 		@children.sort_by! { |x| if x[0].instance_of?(Fixnum) then sprintf("%03i",x[0]) else x[0] end }
 		if child.type == "container"
 			@child_containers << [sortorder,child]
 			@child_containers.sort_by! { |x| x[0] }
-			puts "added a container "+ child.pathElements.to_s + "to " + self.pathElements.to_s
+			#puts "added a container "+ child.pathElements.to_s + "to " + self.pathElements.to_s
 		else
 			@child_items << [sortorder,child]
-			@child_items.sort_by! { |x| x[0] }
-			puts "added an item "+ child.pathElements.to_s + "to " + self.pathElements.to_s
+			@child_items.sort_by! { |x| if x[0].instance_of?(Fixnum) then sprintf("%03i",x[0]) else x[0] end }
+			#puts "added an item "+ child.pathElements.to_s + "to " + self.pathElements.to_s
 		end
 		self.childChanged
 	end
@@ -212,7 +212,7 @@ class MediaContainer < MediaObject
 		dbus_method :GetAll, "in iface:s, out values:a{sv}" do |iface|
 			
 			rvalues = Hash.new
-			puts "GetAll for #{iface} called"
+			#puts "GetAll for #{iface} called"
 			#binding.pry
 			case iface
 			when OBJECT_IFACE
@@ -224,7 +224,7 @@ class MediaContainer < MediaObject
 			else
 				raise DBus.error, "Could not find interface #{iface} when getting all properties"
 			end
-			puts rvalues.to_s
+			#puts rvalues.to_s
 			[rvalues]
 		end
 	end
@@ -232,7 +232,7 @@ class MediaContainer < MediaObject
 	dbus_interface CONTAINER_IFACE do
 		
 		dbus_method :ListChildren, "in offset:u, in max:u, in filter:as, out values:aa{sv}" do |offset, max, filter|
-			puts "ListChildren called for " + @displayName
+			#puts "ListChildren called for " + @displayName
 			rvalues = getDataForList(@children,offset,max,filter)
 			#binding.pry
 			[rvalues]
@@ -264,24 +264,24 @@ class MediaItem < MediaObject
 
 # run through the path from start to end, check containers exist, if they don't create them
 
-		puts "mediaitem initialise " + pathElements.to_s
+		#puts "mediaitem initialise " + pathElements.to_s
 		pathElements[0..-2].each_index do |c|
-			puts "path level " + c.to_s + " looking for " + pathElements[0..c].to_s
+			#puts "path level " + c.to_s + " looking for " + pathElements[0..c].to_s
 			if @@nodeByPath[path_to_dbus(pathElements[0..c])] == nil
-				puts "not found, will create " + pathElements[0..c].to_s + " name " + pathElements[c] + "under parent " + pathElements[0..c-1].to_s
+				#puts "not found, will create " + pathElements[0..c].to_s + " name " + pathElements[c] + "under parent " + pathElements[0..c-1].to_s
 				if c < 1
 					raise "Can't find root container"
 				end
 				parent = @@nodeByPath[path_to_dbus(pathElements[0..c-1])]
 				parent.addChild(MediaContainer.new(parent, pathElements[0..c]),pathElements[c])
 			else
-				puts "found OK"
+				#puts "found OK"
 			end
 		end
 
 # set up the item
 
-		puts "Will place item " + title + " under " + pathElements[0..-2].to_s
+		#puts "Will place item " + title + " under " + pathElements[0..-2].to_s
 		parent = @@nodeByPath[path_to_dbus(pathElements[0..-2])]
 		if parent == nil then raise "parent not found!" end
 		super(parent, pathElements, "music",title)

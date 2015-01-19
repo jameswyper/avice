@@ -27,7 +27,7 @@ avice_tree is a set of classes implementing the MediaServer2 specification.  The
 
 avice_tree_test is a script to create some (dummy) entries in a media hierarchy and export them to rygel.  At the moment running this appears to work with rygel - when testing with djmount and eezupnp clients the media hierarchy shows up and can be navigated.
 
-avice_create_tree reads through the sqlite database and for each file create one or more entries in the media hierarchy (by creating MediaItem objects).  At the time of writing this is creating the hierarchy but it's not correct.
+avice_create_tree reads through the sqlite database and for each file create one or more entries in the media hierarchy (by creating MediaItem objects).  At the time of writing this is creating the hierarchy and might even be serving the files correctly, I need to test.
 
 Instructions (not that this is working yet)
 
@@ -39,6 +39,14 @@ Instructions (not that this is working yet)
 6.  configure rygel to accept external plugins over DBus (change the section under [External] in rygel.conf to read "enabled=true")
 7.  Run rygel (rygel will abort after 5 seconds if it can't find any media backends so ensure you have avice_tree_create running first)
 8.  Start your UPnP client
+
+
+Bugs and other issues:
+
+No internationalisation
+Very little exception handling
+May not handle files with missing metadata very well (ignores them at the moment)
+On my 64-bit 2ghz quad-core system (2008 vintage) avice_scan takes a small number of minutes to read through 30,000 mp3 files (100 or so per second, I think, depending on other disk activity). avice_create_tree.mp3 will craeate about 100,000 dbus objects from this at a rate of about 300/second and when done uses 0.6 GB of memory.
 
 Software Requirements:
 

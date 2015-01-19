@@ -30,28 +30,35 @@ def mp3scan(path)
 		h = Hash.new
 		
 		# call the id3v2 utility with the filename and store the output in rl
-		p = IO.popen('id3v2 -R ' + Shellwords.escape(fn) )
-		rl = p.readlines
-		p.close
+		begin
+			p = IO.popen('id3v2 -R ' + Shellwords.escape(fn) )
 		
-		# for each id3 tag we're interested in (artist, title etc) look for it in the output  from id3v2
-		fields.each do |f|
-			x = rl.grep(/#{f[1]}/i)
-			#if we've found the tag store it in the hash against its friendly name (title not TIT2)
-			if (x != [])
-				h[f[0]] = x[0].chomp[6..-1]
-			else
-				h[f[0]] = 'Unknown'
+			rl = p.readlines
+			p.close
+		
+			# for each id3 tag we're interested in (artist, title etc) look for it in the output  from id3v2
+			fields.each do |f|
+				x = rl.grep(/#{f[1]}/i)
+				#if we've found the tag store it in the hash against its friendly name (title not TIT2)
+				if (x != [])
+					h[f[0]] = x[0].chomp[6..-1]
+				else
+					h[f[0]] = 'Unknown'
+				end
 			end
+		
+			# trim the genre tag of its numeric code
+			if (h['genre'] != nil) 
+				h['genre'] .sub!(/ \(\d*\)/,'')
+			end	
+		
+		
+			set << [fn.dup, h.dup]
+		
+		rescue
+			puts "Errant filename is " + fn
+		
 		end
-		
-		# trim the genre tag of its numeric code
-		if (h['genre'] != nil) 
-			h['genre'] .sub!(/ \(\d*\)/,'')
-		end
-		
-		
-		set << [fn.dup, h.dup]
 		
 		count = count + 1
 		if (count  % 100 == 0)
@@ -115,5 +122,5 @@ end
 #cmd_path = '/home/james/Music/mp3/originals/classical'
 #cmd_ext = 'mp3'
 
-scan_and_store('/home/james/Music', 'mp3')
+scan_and_store('/home/james/Music/mp3', 'mp3')
 #scan_and_store('/home/james/Music/mp3/converted/flac/classical', 'mp3')

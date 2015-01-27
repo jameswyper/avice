@@ -186,6 +186,7 @@ class MediaContainer < MediaObject
 			end
 			response << propertiesResponse
 		end
+		response.each { |r| puts "Responding with " + r.to_s }
 		#binding.pry
 		return response
 	end
@@ -289,10 +290,15 @@ class MediaItem < MediaObject
 		@propertyValues["Artist"] = artist
 		@propertyValues["Album"] = album
 		@propertyValues["Genre"] = genre
-		@propertyValues["TrackNumber"] =track
+		begin
+			t = track.to_i
+		rescue
+			t = 0
+		end
+		@propertyValues["TrackNumber"] = [DBus::type("i"),t]
 		@propertyValues["URLs"] = [DBus::type("as"),[url]]
 		@propertyValues["MIMEType"] = "audio/mpeg"
-		parent.addChild(self,track)
+		parent.addChild(self,t)
 		
 	end
 	

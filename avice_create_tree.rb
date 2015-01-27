@@ -6,6 +6,8 @@ require 'sqlite3'
 
 
 def makepath(genre, artist, composer,  album_artist, album, title, track, filename, path)
+	#puts "File: #{path}/#{filename}"
+	#puts "Artist:#{artist}:Album:#{album}:Title:#{title}:"
 	treepaths = Array.new
 	path = SERVER_NAME.dup
 	path << "Artists" << artist[0] << artist << album << title
@@ -47,9 +49,17 @@ c = 0
 
 
 row.each do |r|
+	
+	r[2] = "--" if  (r[2].nil? || r[2].empty?)
+	r[3] = "--" if  (r[3].nil? || r[3].empty?)
+	r[4] = "--" if  (r[4].nil? || r[4].empty?)
+	r[5] = "--" if  (r[5].nil? || r[5].empty?)
+	r[6] = "--" if  (r[6].nil? || r[6].empty?)
+	r[8] = "--" if  (r[8].nil? || r[8].empty?)
+	r[7] = 0 if (r[7].nil?)
 	tree_paths = makepath(r[2], r[3], r[4], r[5], r[6], r[8], r[7], r[0], r[1])
 	tree_paths.each do |path| 
-		#puts  "Path: " + path.to_s
+		puts  "Path: " + path.to_s
 		begin
 			MediaItem.new(path, r[3], r[6], r[2], r[7], r[8], "file://" + r[1] )
 		rescue
@@ -62,6 +72,6 @@ row.each do |r|
 	end
 end
 
-
+#binding.pry
 
 MediaObject.run

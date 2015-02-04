@@ -169,7 +169,7 @@ class MediaContainer < MediaObject
 		else
 			highest = offset + max - 1
 		end
-		puts "getDataForList #{@displayname} #{offset} #{highest}, request properties #{propertiesReq}"
+		puts Time.now + ":getDataForList #{@displayname} #{offset} #{highest}, request properties #{propertiesReq}"
 		#binding.pry
 		child_array[offset..highest].each do |cref|
 			child = cref[1]
@@ -195,7 +195,7 @@ class MediaContainer < MediaObject
 		dbus_method :Get, "in iface:s, in name:s, out value:v" do |iface, name|
 			
 			rvalue = Array.new	
-			
+			puts  Time.now + ":GetAll for #{@displayname} #{iface} #{name} called"
 			case iface
 			when OBJECT_IFACE
 				rvalue << @propertyValuesObject2.fetch(name) { |x| raise DBus.error, "Could not find property #{x} in #{iface}" }
@@ -213,7 +213,7 @@ class MediaContainer < MediaObject
 		dbus_method :GetAll, "in iface:s, out values:a{sv}" do |iface|
 			
 			rvalues = Hash.new
-			#puts "GetAll for #{iface} called"
+			puts  Time.now + ":GetAll for #{@displayname} #{iface} called"
 			#binding.pry
 			case iface
 			when OBJECT_IFACE
@@ -233,7 +233,7 @@ class MediaContainer < MediaObject
 	dbus_interface CONTAINER_IFACE do
 		
 		dbus_method :ListChildren, "in offset:u, in max:u, in filter:as, out values:aa{sv}" do |offset, max, filter|
-			#puts "ListChildren called for " + @displayName
+			#puts Time.now + ":ListChildren called for " + @displayName
 			rvalues = getDataForList(@children,offset,max,filter)
 			#binding.pry
 			[rvalues]
@@ -310,7 +310,7 @@ class MediaItem < MediaObject
 	
 	dbus_interface PROPERTIES_IFACE do
 		dbus_method :Get, "in iface:s, in name:s, out value:v" do |iface, name|
-			
+			puts  Time.now + ":GetAll for #{@displayname} #{iface} #{name} called"
 			rvalue = Array.new	
 			
 			case iface
@@ -330,7 +330,7 @@ class MediaItem < MediaObject
 		dbus_method :GetAll, "in iface:s, out values:a{sv}" do |iface|
 			
 			rvalues = Hash.new
-			
+			puts  Time.now + ":GetAll for #{@displayname} #{iface} called"
 			case iface
 			when OBJECT_IFACE
 				rvalues = @propertyValuesObject2

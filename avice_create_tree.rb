@@ -44,7 +44,7 @@ db.close
 #row.each { |r| puts r.to_s }
 #puts "Database output ends"
 
-puts row.size.to_s + " entries to add"
+#puts row.size.to_s + " entries to add"
 c = 0
 
 
@@ -59,7 +59,7 @@ row.each do |r|
 	r[7] = 0 if (r[7].nil?)
 	tree_paths = makepath(r[2], r[3], r[4], r[5], r[6], r[8], r[7], r[0], r[1])
 	tree_paths.each do |path| 
-		puts  "Path: " + path.to_s
+		#puts  "Path: " + path.to_s
 		begin
 			MediaItem.new(path, r[3], r[6], r[2], r[7], r[8], "file://" + r[1] )
 		rescue

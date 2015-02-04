@@ -36,13 +36,21 @@ def mp3scan(path)
 			
 			Mp3Info.open(fn) do |mp3|
 		
-				#binding.pry
 				
-				h['title'] = mp3.tag.title
-				h['artist'] = mp3.tag.artist
-				h['albumartist'] = mp3.tag.TPE2
-				h['composer'] = mp3.tag.TCOM
-				h['album'] = mp3.tag.album
+				
+				def enc(x)
+					if (x != nil)
+						return x.encode("ASCII", invalid: :replace, undef: :replace, replace: '_')
+					else
+						return nil
+					end
+				end
+				
+				h['title'] = enc(mp3.tag.title)
+				h['artist'] = enc(mp3.tag.artist)
+				h['albumartist'] = enc(mp3.tag.TPE2)
+				h['composer'] = enc(mp3.tag.TCOM)
+				h['album'] = enc(mp3.tag.album)
 				h['genre'] = mp3.tag.genre_s
 				h['track'] = mp3.tag.tracknum
 				h['length'] = mp3.length

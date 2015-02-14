@@ -25,14 +25,14 @@ avice_id is a small helper script purely concerned with creating unique id field
 
 avice_tree is a set of classes implementing the MediaServer2 specification.  The idea is that creating an instance of MediaItem will represent one entry in the media hierarchy exported to Rygel.  The classes will take care of creating MediaContainer and MediaObject objects automatically.
 
-avice_tree_test is a script to create some (dummy) entries in a media hierarchy and export them to rygel.  At the moment running this appears to work with rygel - when testing with djmount and eezupnp clients the media hierarchy shows up and can be navigated.
+avice_tree_test is a script to create some (dummy) entries in a media hierarchy and export them to rygel. I used this for testing.
 
-avice_create_tree reads through the sqlite database and for each file create one or more entries in the media hierarchy (by creating MediaItem objects).  At the time of writing this is creating the hierarchy and might even be serving the files correctly, I need to test.
+avice_create_tree reads through the sqlite database and for each file create one or more entries in the media hierarchy (by creating MediaItem objects).  
 
-Instructions (not that this is working yet)
+Instructions
 
 1.  Edit avice_scan.rb to point to your music
-2.  run avice_dbcreate.rb (you need only do this once)
+2.  Delete data.db if present and run avice_dbcreate.rb
 3.  run avice_scan.rb
 4.  (if you're feeling brave) edit the custom path creation code in avice_create_tree.rb
 5.  run avice_create_tree.rb
@@ -43,17 +43,26 @@ Instructions (not that this is working yet)
 
 Bugs and other issues:
 
-No internationalisation
-Very little exception handling
-May not handle files with missing metadata very well (ignores them at the moment)
+- High memory usage (0.6GB for a tree of about 100,000 objects - this is 30,000 files which are duplicated at least once in the tree e.g. by artist and by album, or by composer / artist etc.)
+
+- No internationalisation
+
+- Very little exception handling
+
+- May not handle files with missing metadata very well
+
+Issues with Rygel (that I've reported to the rygel-dev team and will have a go at fixing when I have time):
+
+- Rygel appears to want to read the entire media hierarchy tree into memory on startup, this works OK with ~1000 files but with my complete collection I get dbus timeouts.  I need to find out why this is necessary and if possible change it.
+
+- Rygel serves all media containers as upnp class object.container, which causes at least one of my clients (a Roberts Stream 63i radio) to display tracks in title rather than tracknumber sequence. (Other clients using rygel + avice, and other servers with the same client work fine).
+
+
 On my 64-bit 2ghz quad-core system (2008 vintage) avice_scan takes a small number of minutes to read through 30,000 mp3 files (100 or so per second, I think, depending on other disk activity). avice_create_tree.mp3 will craeate about 100,000 dbus objects from this at a rate of about 300/second and when done uses 0.6 GB of memory.
 
 Software Requirements:
 
-id3v2
-sqlite3
-
-Ruby packages used: pry dbus sqlite3
+Ruby packages used: pry dbus sqlite3 mp3info - you need to install these via gem or your distro's package installer
 
 Other software that I've found helpful: bustle, upnp-inspector, d-feet, djmount, eezupnp
 
